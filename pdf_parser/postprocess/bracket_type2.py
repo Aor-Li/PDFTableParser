@@ -60,54 +60,29 @@ def determine_material(material):
 def process_excel(input, output):
     data = pd.read_excel(input, dtype=str)
 
-    # 预处理，找到第一个数字出现的行
-    first_numeric = data[0].apply(lambda x: pd.to_numeric(x, errors='coerce')).first_valid_index()
-    if first_numeric is None:
-        raise ValueError("No numeric starting point found.")
-
     # 创建一个新的DataFrame来存储结果
     new_df = pd.DataFrame(columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'])
 
-    expected_number = 1
-    index = first_numeric
+    for index, row in data.iterrows():
+        current_number = pd.to_numeric(row[0], errors='coerce')
+        third_col_content = row[2] if pd.notna(row[2]) else ''
 
-    while index < len(data):
-        current_number = pd.to_numeric(data.loc[index, 0], errors='coerce')
-        while expected_number < current_number:
-            word = data.loc[index - 1, 1] if index > 0 else ''
+        # 检查条件：第一列有数字或第三列内容前两个字符为数字
+        if not pd.isna(current_number) or (len(third_col_content) >= 2 and third_col_content[:2].isdigit()):
+            word = row[1]
             translated_word = translation_dict.get(word.lower(), word)  # 翻译word，并忽略大小写
-            material = determine_material(data.loc[index - 1, 4] if index > 0 else '')
+            material = determine_material(row[4])
             new_df = pd.concat([new_df, pd.DataFrame({
-                'D': [expected_number],
+                'D': [current_number],
                 'E': [word],
                 'F': [translated_word],
-                'G': [data.loc[index - 1, 2] if index > 0 else ''],
-                'I': [data.loc[index - 1, 4] if index > 0 else ''],
-                'J': [data.loc[index - 1, 6] if index > 0 else ''],
-                'K': [determine_material(data.loc[index - 1, 6])],  # 使用材料类型函数
-                'M': [data.loc[index - 1, 5] if index > 0 else '']
+                'G': [row[2]],
+                'I': [row[4]],
+                'J': [row[6]],
+                'K': [determine_material(row[6])],  # 使用材料类型函数
+                'M': [row[5]]
             })], ignore_index=True)
-            expected_number += 1
-
-        word = data.loc[index, 1]
-        translated_word = translation_dict.get(word.lower(), word)  # 翻译word，并忽略大小写
-        material = determine_material(data.loc[index, 4])
-        new_df = pd.concat([new_df, pd.DataFrame({
-            'D': [expected_number],
-            'E': [word],
-            'F': [translated_word],
-            'G': [data.loc[index, 2]],
-            'I': [data.loc[index, 4]],
-            'J': [data.loc[index, 6]],
-            'K': [determine_material(data.loc[index, 6])],  # 使用材料类型函数
-            'M': [data.loc[index, 5]]
-        })], ignore_index=True)
-        expected_number += 1
-
-        if index + 1 < len(data) and pd.isna(data.iloc[index + 1, 0]) and pd.isna(data.iloc[index + 1, 1]):
-            break
-
-        index += 1
 
     # 保存新的DataFrame到Excel文件
     new_df.to_excel(output, index=False)
+

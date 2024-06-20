@@ -50,9 +50,11 @@ def extract_info_from_column(column_value):
         return None, None, None
     column_value = str(column_value)
     word, after_word, c_value = None, None, None
-    if '/' in column_value:
-        parts = column_value.split('/')
-        second_part = parts[1].strip() if len(parts) > 1 else ""
+    
+    # 只识别第一个 "/" 号
+    first_slash_index = column_value.find('/')
+    if first_slash_index != -1:
+        second_part = column_value[first_slash_index + 1:].strip()
         word = []
         upper_count = 0
         for char in second_part:
@@ -68,6 +70,7 @@ def extract_info_from_column(column_value):
         after_word = second_part[len(word):]
         match_c = re.search(r'(\d+)[x\*](\d+)[x\*](\d+)', after_word)
         c_value = match_c.group(3) if match_c else None
+    
     return word, after_word, c_value
 
 # 材料类型

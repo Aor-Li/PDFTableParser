@@ -17,8 +17,16 @@ ic(ROOT)
 
 # 初始化paddle ocr
 from paddleocr import PaddleOCR
-paddle_ocr_model_path = ROOT + "/weights/paddle_ocr/ch_PP-OCRv4_det_server_infer/"
-ocr = PaddleOCR(use_angle_cls=True, lang="ch", det_model_dir=paddle_ocr_model_path)
+# paddle_ocr_model_path = ROOT + "/weights/paddle_ocr/ch_PP-OCRv4_det_server_infer/"
+
+#ocr = PaddleOCR(use_angle_cls=True, lang="ch", det_model_dir=paddle_ocr_model_path)
+paddle_ocr_model_det_path = ROOT + "/weights/paddle_ocr/ch_PP-OCRv4_det_infer/"
+paddle_ocr_model_rec_path = ROOT + "/weights/paddle_ocr/ch_PP-OCRv4_rec_infer/"
+
+ocr = PaddleOCR(use_angle_cls=True, lang='ch',det_model_dir= paddle_ocr_model_det_path,rec_model_dir=paddle_ocr_model_rec_path
+               ,table=False,drop_score=0.1,binarize=True,use_gpu=True)
+
+
 
 # 识别图片文件后缀
 def get_file_extension_in_dir(dir_path: str, file_name: str):

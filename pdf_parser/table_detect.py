@@ -73,6 +73,7 @@ def detect(
     weights : str,                      # 权重路径
     input   : str,                      # 输入图片路径
     output  : str = "detect_results",   # 输出结果路径
+    conf_thres: float = 0.7,            # 置信度阈值
 ):
     print("Running table detection ...")
 
@@ -85,6 +86,7 @@ def detect(
     params["name"] = name
     params["weights"] = os.path.abspath(weights)
     params["source"] = os.path.abspath(input)
+    params["conf_thres"] = conf_thres
     ic(params)
 
     # change working directory to yolov5
@@ -103,7 +105,7 @@ def detect(
     )
     print("Detection finished, moving results...")
     
-    # organzie results
+    # organize results
     shutil.move("pdf_parser_results/{}".format(name), output)
     shutil.rmtree("pdf_parser_results")
 
@@ -163,11 +165,12 @@ def organize(
 def main(
     weights: str,
     input  : str,
-    output : str = ""
+    output : str = "",
+    conf_thres: float = 0.7,  # 置信度阈值
 ):
     output = "./results" if output == "" else output
-    detect(weights=weights, input=input, output=output)
+    detect(weights=weights, input=input, output=output, conf_thres=conf_thres)
     organize(input=output, origin=input)
 
 if __name__ == "__main__":
-    fire.Fire()
+    fire.Fire(main)
